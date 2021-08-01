@@ -25,14 +25,14 @@ def interact(nb_episodes, game_name):
 
 
 if __name__ == '__main__':
-    envs_list = available_env()
+    envs_list = available_env(Agent = "Dumb")
     use_input_1 = 0
     while use_input_1 not in envs_list:
         print('Refer to https://gym.openai.com/envs/#atari')
-        use_input_1 = input("Choose a game to play: (press 0 to check available games)")
+        use_input_1 = input("Choose a game to play: (press 0 to check available games)\t")
 
         if use_input_1 == '0':
             [print(i) for i in envs_list]
-    rounds = int(input("Number of episodes to play"))
+    rounds = int(input("Number of episodes to play:\t"))
     print('#' * 20, f'Playing {use_input_1} for f{rounds}', '#' * 20)
     interact(nb_episodes=rounds, game_name=use_input_1)
