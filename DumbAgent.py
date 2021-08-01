@@ -29,7 +29,7 @@ if __name__ == '__main__':
     use_input_1 = 0
     while use_input_1 not in envs_list:
         print('Refer to https://gym.openai.com/envs/#atari')
-        use_input_1 = input("Chose a game to play: (press 0 to check available games)")
+        use_input_1 = input("Choose a game to play: (press 0 to check available games)")
 
         if use_input_1 == '0':
             [print(i) for i in envs_list]
