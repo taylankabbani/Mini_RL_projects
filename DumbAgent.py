@@ -25,7 +25,7 @@ def interact(nb_episodes, game_name):
 
 
 if __name__ == '__main__':
-    envs_list = available_env(Agent = "Dumb")
+    envs_list = available_env()
     use_input_1 = 0
     while use_input_1 not in envs_list:
         print('Refer to https://gym.openai.com/envs/#atari')
