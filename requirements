@@ -1,9 +1,0 @@
-pip install tensorflow==2.5.0
-pip install gym==0.18.3
-pip install keras-rl2==1.0.5
-pip isnatll gym[atari]
-
-#python -m atari_py.import_roms C:\Users\ME\Downloads\Roms\ROM
-
-# For FlappyBird Env:
-pip install flappy-bird-gym
