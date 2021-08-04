@@ -1,0 +1,11 @@
+pip install tensorflow==2.3.1
+pip install gym==0.18.3
+pip install keras-rl2==1.0.5
+pip install gym[atari]
+pip install regex
+
+#python -m atari_py.import_roms .\RL_Atari2600\ROMS
+## If you got an error try to download atari-py from conda
+
+# For FlappyBird Env:
+pip install flappy-bird-gym
