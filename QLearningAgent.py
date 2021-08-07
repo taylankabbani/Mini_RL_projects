@@ -1,17 +1,15 @@
 import gym
 from gym import envs 
 import numpy as np
+import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from utils import available_env
 
 class QLearning:
     
-    def __init__(self, env: str, max_steps_per_episode: int, gamma: float, lr_rate: float):
+    def __init__(self, env: str):
         self._env = gym.make(env)
         # Q-learning parameteres
-        self.max_steps_per_episode = max_steps_per_episode
-        self.gamma = gamma
-        self.lr_rate = lr_rate
         self.Q_tabel = self.creat_Q_tabel()
 
     def creat_Q_tabel(self):
@@ -36,7 +34,7 @@ class QLearning:
         elif decay == 'linear':
             a = -(max_rate - min_rate)/nb_episodes
             b = max_rate
-            exploration_rate = lambda episode: max(min_rate, a * current_episode + b)
+            exploration_rate =  max(min_rate, a * current_episode + b)
         else:
             return 'Decay strategy not recognized'
 
@@ -44,50 +42,70 @@ class QLearning:
 
 
 
-    def train(self, n_episods: int):
+    def train(self, n_episods: int, lr_rate: float, gamma: float, policy: str):
         '''The training loop where the agent interact with the env
         '''
+        print("\n\n****** Start Training ******\n\n")
+        avg_reward = 0
+        counter = 1
+        rewards_per_1000_eps = []
+
+        exploration_rate = 1 # Initially is high to try all possible actions
+
+        print("***** Average rewards per 1000 episodes *****")
         for episode in range(n_episods):
             #initial state
-            state_0 = self._env.reset()
+            state = self._env.reset()
             done = False
-            current_reward = 0
-            exploration_rate = 1 # Initially is high to try all possible actions
+            episodic_reward = 0
+
             # Till the end of the episode
             while not done:
                 # Diversification/exploitation
                 random_x = float(np.random.uniform(0,1))
                 if exploration_rate > random_x :
-                    pass
+                    #Explore
+                    action = self._env.action_space.sample()
+
                 else:
-                    pass
+                    # Exploit
+                    action = np.argmax(self.Q_tabel[state, :])
                 
+                # Take action, observe next state and reward received 
+                next_state, reward, done, info = self._env.step(action)
+
+                # Update Q_tabel
+                q_value = float(self.Q_tabel[state, action])
+                TD_error = float(reward + gamma * np.max(self.Q_tabel[next_state, :]) - q_value)
+                self.Q_tabel[state, action] = float(q_value + (lr_rate * TD_error))
+
+                state = next_state
+                episodic_reward += reward
+            
+            # Decrease Exploration rate after each episode
+            exploration_rate = self._annealing_policy(current_episode=episode, decay=policy, nb_episodes=n_episods)
+
+            avg_reward += episodic_reward
+            
+            
+            # avg reward per 1000 episode
+            if episode//1000 == counter:
+                rewards_per_1000_eps.append(avg_reward)
+                print(episode, ' : ', avg_reward/1000)
+                avg_reward = 0
+                counter += 1
+
+        print("\n\n****** Training Finished ******\n\n")
+        plt.plot(rewards_per_1000_eps)
+        plt.show()
 
 
 
 
 
-### Debug ###
-test = QLearning(env="Taxi-v3", n_episods="me", max_steps_per_episode='a', gamma=0.1, lr_rate=0.5)
-print(test.Q_tabel)
-# print(test._env)
-# print(test.actions)
-# test.select_env()
-    # def select_env(self):
-    #     envs_list = available_env(Agent='toy')
-    #     [print(env) for env in envs_list]
-    #     user_input = input('Choose a game to play: ')
-    #     while user_input not in envs_list:
-    #         user_input = input("\nThe game does not exist.\n\n Choose a game to play: ")
-    #     env = gym.make(user_input)
-    #     return env
-# for env in gym.envs.registry.all():
-#     print(env)
 
-# env = gym.make("Reacher-v2")
-# actions = env.action_space.n
-# states = env.observation_space.n
-# print("Number of actions: ",actions, "\nNumber of states: ", states)
-# envs_list = available_env(Agent='toy')
-# for i in envs_list:
-#     print(i)
+
+
+if __name__ == '__main__':
+    test = QLearning(env="Taxi-v3")
+    test.train(n_episods=40000, lr_rate=0.1, gamma=0.99, policy='linear')
