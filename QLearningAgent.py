@@ -5,10 +5,10 @@ from IPython.display import clear_output
 from utils import available_env
 
 class QLearning:
-    def __init__(self, env: str, n_episods: int, max_steps_per_episode: int, gamma: float, lr_rate: float):
+    
+    def __init__(self, env: str, max_steps_per_episode: int, gamma: float, lr_rate: float):
         self._env = gym.make(env)
         # Q-learning parameteres
-        self.n_episods = n_episods
         self.max_steps_per_episode = max_steps_per_episode
         self.gamma = gamma
         self.lr_rate = lr_rate
@@ -23,9 +23,47 @@ class QLearning:
         Q_tabel = np.zeros((states, actions))
         return Q_tabel
     
+    def _annealing_policy(self, current_episode, decay: str, nb_episodes: int):
+        '''Annealing policy with exponential/linear decaying
+        returns the exploration rate based on the episode number
+        '''
+        max_rate = 1
+        min_rate = 0.01
+        decay_rate = 0.001
+        if decay== 'exp':
+            exploration_rate = min_rate + (max_rate - min_rate)* np.exp(-decay_rate*current_episode)
+        
+        elif decay == 'linear':
+            a = -(max_rate - min_rate)/nb_episodes
+            b = max_rate
+            exploration_rate = lambda episode: max(min_rate, a * current_episode + b)
+        else:
+            return 'Decay strategy not recognized'
 
-    
-    # def
+        return exploration_rate
+
+
+
+    def train(self, n_episods: int):
+        '''The training loop where the agent interact with the env
+        '''
+        for episode in range(n_episods):
+            #initial state
+            state_0 = self._env.reset()
+            done = False
+            current_reward = 0
+            exploration_rate = 1 # Initially is high to try all possible actions
+            # Till the end of the episode
+            while not done:
+                # Diversification/exploitation
+                random_x = float(np.random.uniform(0,1))
+                if exploration_rate > random_x :
+                    pass
+                else:
+                    pass
+                
+
+
 
 
 
