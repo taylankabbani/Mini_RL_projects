@@ -4,22 +4,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from utils import available_env
+import time
 
 class QLearning:
     
     def __init__(self, env: str):
         self._env = gym.make(env)
         # Q-learning parameteres
-        self.Q_tabel = self.creat_Q_tabel()
+        self.q_table = self.creat_q_table()
 
-    def creat_Q_tabel(self):
+    def creat_q_table(self):
         actions = self._env.action_space.n
         states = self._env.observation_space.n
         # Creating a Q-table where rows are states and columns are actions
         # Note that for other environments where states are infint (e.g. state is an array of pixels) the 
         # number of states is not avialable rather you can get the shape of the state
-        Q_tabel = np.zeros((states, actions))
-        return Q_tabel
+        q_table = np.zeros((states, actions))
+        return q_table
     
     def _annealing_policy(self, current_episode, decay: str, nb_episodes: int):
         '''Annealing policy with exponential/linear decaying
@@ -69,15 +70,15 @@ class QLearning:
 
                 else:
                     # Exploit
-                    action = np.argmax(self.Q_tabel[state, :])
+                    action = np.argmax(self.q_table[state, :])
                 
                 # Take action, observe next state and reward received 
                 next_state, reward, done, info = self._env.step(action)
 
-                # Update Q_tabel
-                q_value = float(self.Q_tabel[state, action])
-                TD_error = float(reward + gamma * np.max(self.Q_tabel[next_state, :]) - q_value)
-                self.Q_tabel[state, action] = float(q_value + (lr_rate * TD_error))
+                # Update q_table
+                q_value = float(self.q_table[state, action])
+                TD_error = float(reward + gamma * np.max(self.q_table[next_state, :]) - q_value)
+                self.q_table[state, action] = float(q_value + (lr_rate * TD_error))
 
                 state = next_state
                 episodic_reward += reward
@@ -99,13 +100,49 @@ class QLearning:
         plt.plot(rewards_per_1000_eps)
         plt.show()
 
+    def test_play(self, num_eps: int):
+        for episode in range(num_eps):
+            state = self._env.reset()
+            done = False
 
+            print("**** Episode: ", episode+1, "*****")
+            score = 0
+            steps = 0
+            self._env.render()
+            time.sleep(1)
+            input("\n\n\nPress Enter to take action...") 
+            clear_output(wait=False)
+            while not done:
+                action = np.argmax(self.q_table[state, :])
+                new_state, reward, done, info = self._env.step(action)
+                score += reward
+                steps += 1
+                print(f"** q_value: {self.q_table[state,action]} **")
+                print(f"** Action Reward: {reward} **")
+                print(f"** Number of steps: {steps} **")
+                print(f"** Current Score: {score} **")
+                if reward == 20:
+                    print("##### Successful Dropoff #####")
+                elif reward == -10:
+                    print('##### Illegal pickup/dropoff action #####')
+                self._env.render()
+                input("\n\n\nPress Enter to take action...")
 
-
+                clear_output(wait=False)
+                state = new_state
+            print(f"***** End of Episode {episode+1} *****")
+            print(f"** Score: {score} **")
+            print(f"** Total steps taken: {score} **")
+            clear_output(wait=True)
+            time.sleep(3)
+        self._env.close()
+                
 
 
 
 
 if __name__ == '__main__':
     test = QLearning(env="Taxi-v3")
-    test.train(n_episods=40000, lr_rate=0.1, gamma=0.99, policy='linear')
+    test.train(n_episods=10000, lr_rate=0.1, gamma=0.99, policy='exp')
+    
+    test.test_play(5)
