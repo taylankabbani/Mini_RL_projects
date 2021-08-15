@@ -4,12 +4,11 @@ import gym
 import random
 from gym import envs
 from keras.backend_config import epsilon
+from keras.optimizer_v2.rmsprop import RMSProp
 import numpy as np
 import flappy_bird_gym
 from collections import deque
-from keras.optimizers import rmsprop_v2 as RMS
-from tensorflow.python.keras import models
-from utils import build_DenseNet
+import utils
 
 
 
@@ -19,13 +18,16 @@ class DQNAgent:
         self._env = self._set_env(env)
         self.state_space = self._env.observation_space.shape[0]
         self.action_space = self._env.action_space.n
-        # The Table (Database) of action/state values
         self.memory = deque(maxlen=memory_size)
 
         # Learning hyperparameters
         self.gamma = discount_factor
         self.alpha = learning_rate 
 
+        self.model = self._build_deep_model()
+
+        self.last_state = None
+        self.last_action = None
 
     def _set_env(self, env:str):
         if env == "FlappyBird":
@@ -34,14 +36,34 @@ class DQNAgent:
             return gym.make(env)
         
 
-    def _deep_model(self):
+    def _build_deep_model(self):
         """Building the NN network"""
-        state_shape = self._env.observation_space.shape[0]
+        state_shape = self._env.observation_space.shape
         num_action = self._env.action_space.n
-        model = build_DenseNet(nn_input=state_shape, nn_output=(num_action))
+        model = utils.build_DenseNet(nn_input= state_shape, nn_output=(num_action))
         """Compile the network"""
-        model.compile(loos = 'mse',
-            optimizer=RMS(lr=0.0001, rho=0.95, epsilon=0.01), metrics=['accuracy'])
+        model.compile(optimizer= RMSProp(learning_rate=0.0001, rho=0.95, epsilon=0.01), loss = 'mse', 
+            metrics=['accuracy'])
+        return model
+
+    def actor(self, state):
+        """The actor which is responsible of taking actions and exploring the env"""
+        # reshaping state to be fed to the neural network
+        state = np.reshape(state, (1, self.state_space))
+        _action_values = (self.model(state))
+        pass
+    
+    def agent_start(self):
+         """The first method called when the experiment starts, called after the environment starts.
+        Args:
+            state (Numpy array): the state from the
+                environment's evn_start function.
+        Returns:
+            self.last_action [int] : The first action the agent takes.
+        """
+
+
+
 
         # print(height, width, channels)
         # nn_model = Sequential([
@@ -64,4 +86,4 @@ class DQNAgent:
 
 if __name__ == "__main__":
     test = DQNAgent(env='FlappyBird', memory_size=2000, discount_factor=0.99, learning_rate=0.5)
-    test._build_nn_model()
+    test.actor((2,55))
