@@ -3,7 +3,7 @@ from numpy.matrixlib import defmatrix
 import regex as re
 from keras.models import Sequential
 from keras.layers import Input, Dense, Flatten, Conv2D, MaxPool2D
-from tensorflow.python.ops.gen_resource_variable_ops import ConsumeMutexLock
+
 
 def available_env(Agent='Atari'):
     """Show available environment"""
@@ -43,7 +43,7 @@ def build_ConvNet(nn_input, nn_output):
 def build_DenseNet(nn_input, nn_output):
     """Build Dense neural network to process simple numerical information about the game's state as observations.This is suitable for Ram version of the Atari games"""
     nn_model = Sequential([
-        Dense(units=512, input_shape=(nn_input,), activation="relu", kernel_initializer='he_uniform'),
+        Dense(units=512, input_shape= nn_input, activation="relu", kernel_initializer='he_uniform'),
         Dense(units=256, activation='relu', kernel_initializer='he_uniform'),
         Dense(units=64, activation='relu', kernel_initializer='he_uniform'),
         Dense(units=nn_output, activation='relu', kernel_initializer='he_uniform')
