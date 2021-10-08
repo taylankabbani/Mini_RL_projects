@@ -21,35 +21,33 @@ def available_env(Agent='Atari'):
     envs_list.append("FlappyBird")
     return envs_list
 
+
 def build_ConvNet(nn_input, nn_output):
     """Build Convolution neural network to process game input pixels.
     This is suitable for RGB version of the Atari games"""
 
     ConvNet_model = Sequential([
-        Conv2D(filter=32,  kernel_size=(8,8), strides=(2,2), activation="relu", input_shape=nn_input),
-        MaxPool2D(pool_size=(2,2)),
-        Conv2D(filter=64,  kernel_size=(8,8), strides=(2,2), activation="relu"),
-        MaxPool2D(pool_size=(2,2)),
-        Conv2D(filter=128,  kernel_size=(8,8), strides=(2,2), activation="relu"),
-        MaxPool2D(pool_size=(4,4)),
+        Conv2D(filters=32, kernel_size=(8, 8), strides=(2, 2), activation="relu", input_shape=nn_input),
+        MaxPool2D(pool_size=(2, 2)),
+        Conv2D(filters=64, kernel_size=(8, 8), strides=(2, 2), activation="relu"),
+        MaxPool2D(pool_size=(2, 2)),
+        Conv2D(filters=128, kernel_size=(8, 8), strides=(2, 2), activation="relu"),
+        MaxPool2D(pool_size=(4, 4)),
         Flatten(),
         Dense(units=521, activation="relu"),
         Dense(units=256, activation="relu"),
-        Dense(units=nn_output, activation="linear")
+        Dense(units=nn_output, activation="relu")
     ])
     return ConvNet_model
 
 
 def build_DenseNet(nn_input, nn_output):
-    """Build Dense neural network to process simple numerical information about the game's state as observations.This is suitable for Ram version of the Atari games"""
+    """Build Dense neural network to process simple numerical information about the game's state as observations.This
+    is suitable for Ram version of the Atari games """
     nn_model = Sequential([
-        Dense(units=512, input_shape= nn_input, activation="relu", kernel_initializer='he_uniform'),
+        Dense(units=512, input_shape=nn_input, activation="relu", kernel_initializer='he_uniform'),
         Dense(units=256, activation='relu', kernel_initializer='he_uniform'),
         Dense(units=64, activation='relu', kernel_initializer='he_uniform'),
         Dense(units=nn_output, activation='relu', kernel_initializer='he_uniform')
     ])
     return nn_model
-
-    
-
-

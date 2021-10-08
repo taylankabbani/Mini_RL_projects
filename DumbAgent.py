@@ -34,5 +34,5 @@ if __name__ == '__main__':
         if use_input_1 == '0':
             [print(i) for i in envs_list]
     rounds = int(input("Number of episodes to play:\t"))
-    print('#' * 20, f'Playing {use_input_1} for f{rounds}', '#' * 20)
+    print('#' * 20, f'Playing {use_input_1} for {rounds} rounds', '#' * 20)
     interact(nb_episodes=rounds, game_name=use_input_1)
