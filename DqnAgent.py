@@ -82,13 +82,34 @@ class DQNAgent:
         # Make sure we have enough data
         if len(self.memory) < self.train_start:
             return
-
         # draw random samples from memory to train the neural network
         mini_batch = random.sample(self.memory, min(len(self.memory), self.batch_size))
-    #
-    #     # Variables to store minibatch info
-    #     # state =
-    #
+
+        # Variables to store mini_batch info
+        state_batch = np.zeros((self.batch_size,)+self.state_space)
+        next_state_batch = np.zeros((self.batch_size,)+self.state_space)
+        actions, rewards, done = [], [], []
+        for i in range(self.batch_size):
+            sample = mini_batch[i]
+            state_batch[i] = sample[0]
+            actions.append(sample[1])
+            rewards.append(sample[2])
+            next_state_batch[i] = sample[3]
+            done.append(sample[4])
+
+        # Predict y label using the deep network
+        target = self.model.predict(state_batch)
+        target_next = self.model.predict(next_state_batch)
+
+        # TD Error
+        for i in range(self.batch_size):
+            if done[i]:
+                target[i][actions[i]] = rewards[i]
+            else:
+                target[i][actions[i]] = rewards[i] + self.gamma * (np.amax(target_next[i]))
+        self.model.fit(state_batch, target, batch_size=self.batch_size, verbose=0)
+
+
 
     def _agent_step(self):
         for i in range(self.episodes):
@@ -111,10 +132,10 @@ class DQNAgent:
                     # save model
 
                 # we save samples in memory to
-                self.memory.append(state, action, reward, next_state, done)
+                self.memory.append((state, action, reward, next_state, done))
                 state = next_state
 
-                # Update weighs and TD
+
 
     #     # print(height, width, channels)
     #     # nn_model = Sequential([
@@ -128,7 +149,7 @@ class DQNAgent:
     #     # ])
     #     # return nn_model
     #
-    # # def _build_agent(self):
+    # # def _build_agent(sel f):
     # #     """The policies the RL agent will follow to learn Q-value,  as it's off-policy, the agent will use one greedy
     # #     policy to always choose the greedy action (Q-value) and another policy that will break the greedy action
     # #     selection by rate of epsilon
@@ -147,6 +168,7 @@ if __name__ == "__main__":
     # cv.destroyAllWindows()
     test = DQNAgent(env='FlappyBird-v0', memory_size=2000, discount_factor=0.99, learning_rate=0.5, episodes=100)
     test._agent_step()
+    test.learn()
     # rdm_state = test._env.observation_space.sample()
     # #
     # print('Action', test._get_q_value(rdm_state))
